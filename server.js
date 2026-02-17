@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,10 @@ let users = [
   { username: "user", password: "1234", role: "user" },
 ];
 
+// จำ user ที่ login
+let currentUser = null;
+
+
 /* =========================
    LOGIN
 ========================= */
@@ -24,13 +29,15 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find(
-    (u) => u.username === username && u.password === password,
+    (u) => u.username === username && u.password === password
   );
 
   if (!user) return res.status(401).send("login fail");
 
+  currentUser = user.username;
   res.json({ role: user.role });
 });
+
 
 /* =========================
    REGISTER
@@ -38,62 +45,95 @@ app.post("/login", (req, res) => {
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
 
-  // เช็คว่าซ้ำไหม
-  const exist = users.find(u => u.username === username);
+  const exist = users.find((u) => u.username === username);
   if (exist) return res.send("username already exists");
 
-  // เพิ่ม user ใหม่
   users.push({
     username,
     password,
-    role: "user"
+    role: "user",
   });
+
+  // สร้างโฟลเดอร์ user
+  const userFolder = `uploads/${username}`;
+  if (!fs.existsSync(userFolder)) {
+    fs.mkdirSync(userFolder, { recursive: true });
+  }
 
   res.send("register success");
 });
 
+
 /* =========================
-   UPLOAD FILE
+   STORAGE CONFIG
 ========================= */
 const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => cb(null, file.originalname),
+  destination: (req, file, cb) => {
+    if (!currentUser) return cb(new Error("not login"));
+
+    const userFolder = `uploads/${currentUser}`;
+    if (!fs.existsSync(userFolder)) {
+      fs.mkdirSync(userFolder, { recursive: true });
+    }
+
+    cb(null, userFolder);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
 });
 
 const upload = multer({ storage });
 
+
+/* =========================
+   UPLOAD FILE
+========================= */
 app.post("/upload", upload.single("file"), (req, res) => {
   res.send("upload success");
 });
 
+
 /* =========================
-   LIST FILES
+   LIST FILES (เฉพาะ user)
 ========================= */
 app.get("/files", (req, res) => {
-  fs.readdir("uploads", (err, files) => {
+  if (!currentUser) return res.json([]);
+
+  const userFolder = `uploads/${currentUser}`;
+
+  fs.readdir(userFolder, (err, files) => {
     if (err) return res.json([]);
     res.json(files);
   });
 });
 
+
 /* =========================
    DOWNLOAD
 ========================= */
 app.get("/download/:name", (req, res) => {
-  res.download("uploads/" + req.params.name);
+  if (!currentUser) return res.send("not login");
+
+  const filePath = `uploads/${currentUser}/${req.params.name}`;
+  res.download(filePath);
 });
 
+
 /* =========================
-   DELETE (ADMIN)
+   DELETE FILE
 ========================= */
 app.delete("/delete/:name", (req, res) => {
+  if (!currentUser) return res.send("not login");
+
   try {
-    fs.unlinkSync("uploads/" + req.params.name);
+    fs.unlinkSync(`uploads/${currentUser}/${req.params.name}`);
     res.send("deleted");
   } catch {
     res.send("file not found");
   }
 });
+
 
 /* =========================
    SERVER START
