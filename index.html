@@ -2,18 +2,30 @@
 <html>
   <head>
     <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
     <title>Workshop #6</title>
   </head>
   <body>
     <div class="container">
       <!-- LOGIN -->
       <div id="loginPage" class="page">
-        <h1>Login</h1>
-        <input id="username" placeholder="username" />
-        <input id="password" type="password" placeholder="password" />
-        <br />
-        <button onclick="login()">Login</button>
-      </div>
+    <h1>Login</h1>
+
+    <div class="input-group">
+        <i class="fa fa-user"></i>
+        <input id="username" placeholder="Username">
+    </div>
+
+    <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input id="password" type="password" placeholder="Password">
+    </div>
+
+    <button onclick="login()">Login</button>
+</div>
 
       <!-- USER -->
       <div id="userPage" class="page">
@@ -46,98 +58,99 @@
     </div>
 
     <script>
-     const serverUrl = "http://localhost:5000";
+      const serverUrl = "http://localhost:5000";
 
-show("loginPage");
+      show("loginPage");
 
-function show(id) {
-  document.querySelectorAll(".page").forEach(p => p.style.display = "none");
-  document.getElementById(id).style.display = "block";
-}
-
-// LOGIN
-function login() {
-  fetch(`${serverUrl}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value,
-    }),
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.role === "admin") {
-        show("adminPage");
-        loadAdminFiles();
-      } else {
-        show("userPage");
-        loadUserFiles();
+      function show(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => (p.style.display = "none"));
+        document.getElementById(id).style.display = "block";
       }
-    });
-}
 
-// LOGOUT
-function logout() {
-  show("loginPage");
-}
+      // LOGIN
+      function login() {
+        fetch(`${serverUrl}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: username.value,
+            password: password.value,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.role === "admin") {
+              show("adminPage");
+              loadAdminFiles();
+            } else {
+              show("userPage");
+              loadUserFiles();
+            }
+          });
+      }
 
-// UPLOAD
-function uploadFile() {
-  const file = document.getElementById("fileInput").files[0];
-  if (!file) return alert("เลือกไฟล์ก่อน");
+      // LOGOUT
+      function logout() {
+        show("loginPage");
+      }
 
-  const formData = new FormData();
-  formData.append("file", file);
+      // UPLOAD
+      function uploadFile() {
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) return alert("เลือกไฟล์ก่อน");
 
-  fetch(`${serverUrl}/upload`, {
-    method: "POST",
-    body: formData,
-  }).then(() => {
-    uploadStatus.textContent = "Upload success";
-    loadUserFiles();
-  });
-}
+        const formData = new FormData();
+        formData.append("file", file);
 
-// USER FILE
-function loadUserFiles() {
-  fetch(`${serverUrl}/files`)
-    .then(res => res.json())
-    .then(files => {
-      fileList.innerHTML = "";
-      files.forEach(file => {
-        fileList.innerHTML += `
+        fetch(`${serverUrl}/upload`, {
+          method: "POST",
+          body: formData,
+        }).then(() => {
+          uploadStatus.textContent = "Upload success";
+          loadUserFiles();
+        });
+      }
+
+      // USER FILE
+      function loadUserFiles() {
+        fetch(`${serverUrl}/files`)
+          .then((res) => res.json())
+          .then((files) => {
+            fileList.innerHTML = "";
+            files.forEach((file) => {
+              fileList.innerHTML += `
           <li>
             <a href="${serverUrl}/download/${file}">${file}</a>
           </li>
         `;
-      });
-    });
-}
+            });
+          });
+      }
 
-// ADMIN FILE
-function loadAdminFiles() {
-  fetch(`${serverUrl}/files`)
-    .then(res => res.json())
-    .then(files => {
-      adminList.innerHTML = "";
-      files.forEach(file => {
-        adminList.innerHTML += `
+      // ADMIN FILE
+      function loadAdminFiles() {
+        fetch(`${serverUrl}/files`)
+          .then((res) => res.json())
+          .then((files) => {
+            adminList.innerHTML = "";
+            files.forEach((file) => {
+              adminList.innerHTML += `
           <li>
             <a href="${serverUrl}/download/${file}">${file}</a>
             <button onclick="deleteFile('${file}')">delete</button>
           </li>
         `;
-      });
-    });
-}
+            });
+          });
+      }
 
-function deleteFile(name) {
-  fetch(`${serverUrl}/delete/${name}`, {
-    method: "DELETE"
-  }).then(() => loadAdminFiles());
-}
-
+      function deleteFile(name) {
+        fetch(`${serverUrl}/delete/${name}`, {
+          method: "DELETE",
+        }).then(() => loadAdminFiles());
+      }
     </script>
   </body>
 </html>
