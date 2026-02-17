@@ -8,7 +8,7 @@
     <div class="container">
       <!-- LOGIN -->
       <div id="loginPage" class="page">
-        <h2>Login</h2>
+        <h1>Login</h1>
         <input id="username" placeholder="username" />
         <input id="password" type="password" placeholder="password" />
         <br />
@@ -16,37 +16,33 @@
       </div>
 
       <!-- USER -->
-      <!-- USER -->
-<div id="userPage" class="page">
-    <h2>Upload Files</h2>
+      <div id="userPage" class="page">
+        <h2>Upload Files</h2>
 
-    <input type="file" id="fileInput">
+        <input type="file" id="fileInput" />
 
-    <div class="btn-group">
-        <button class="upload-btn" onclick="uploadFile()">Upload File</button>
-        
-    </div>
+        <div class="btn-group">
+          <button class="upload-btn" onclick="uploadFile()">Upload File</button>
+        </div>
 
-    <p id="uploadStatus"></p>
+        <p id="uploadStatus"></p>
 
-    <h3>Your Files</h3>
-    <ul id="fileList"></ul>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-</div>
-
-
-<!-- ADMIN -->
-<div id="adminPage" class="page">
-    <h2>Admin Panel</h2>
-
-    <ul id="adminList"></ul>
-
-    <div class="btn-group">
-        <button class="refresh-btn" onclick="loadFiles()">Refresh</button>
+        <h2>Your Files</h2>
+        <ul id="fileList"></ul>
         <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-</div>
+      </div>
 
+      <!-- ADMIN -->
+      <div id="adminPage" class="page">
+        <h2>Admin Panel</h2>
+
+        <ul id="adminList"></ul>
+
+        <div class="btn-group">
+          <button class="refresh-btn" onclick="loadFiles()">Refresh</button>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
     </div>
 
     <script>

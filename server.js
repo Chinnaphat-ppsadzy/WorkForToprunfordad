@@ -11,7 +11,7 @@ app.use(express.static("frontend"));
 
 const users = [
   { username: "admin", password: "1234", role: "admin" },
-  { username: "user", password: "1234", role: "user" }
+  { username: "user", password: "1234", role: "user" },
 ];
 
 // LOGIN
@@ -19,7 +19,7 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find(
-    u => u.username === username && u.password === password
+    (u) => u.username === username && u.password === password,
   );
 
   if (!user) return res.status(401).send("login fail");
@@ -30,7 +30,7 @@ app.post("/login", (req, res) => {
 // upload file
 const storage = multer.diskStorage({
   destination: "uploads/",
-  filename: (req, file, cb) => cb(null, file.originalname)
+  filename: (req, file, cb) => cb(null, file.originalname),
 });
 
 const upload = multer({ storage });
