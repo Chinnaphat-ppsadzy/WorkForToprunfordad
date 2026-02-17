@@ -158,37 +158,63 @@
       }
 
       // USER FILE
-      function loadUserFiles() {
-        fetch(`${serverUrl}/files`)
-          .then((res) => res.json())
-          .then((files) => {
-            fileList.innerHTML = "";
-            files.forEach((file) => {
-              fileList.innerHTML += `
-                <li>
-                  <a href="${serverUrl}/download/${file}">${file}</a>
-                </li>
-              `;
-            });
-          });
-      }
+     function loadUserFiles() {
+  fetch(`${serverUrl}/files`)
+    .then((res) => res.json())
+    .then((files) => {
+      fileList.innerHTML = "";
+      files.forEach((file) => {
+        const fileUrl = `${serverUrl}/download/${file}`;
+        const extension = file.split('.').pop().toLowerCase();
+        let preview = "";
+ 
+        if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+          preview = `<img src="${fileUrl}" style="max-width: 200px; display: block; margin-bottom: 10px; border-radius: 8px;">`;
+        } else if (["mp4", "webm", "ogg"].includes(extension)) {
+          preview = `<video src="${fileUrl}" controls style="max-width: 200px; display: block; margin-bottom: 10px; border-radius: 8px;"></video>`;
+        }
+
+        fileList.innerHTML += `
+          <li style="margin-bottom: 20px; list-style: none; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            ${preview}
+            <a href="${fileUrl}" target="_blank"><i class="fa fa-file"></i> ${file}</a>
+          </li>
+        `;
+      });
+    });
+}
 
       // ADMIN FILE
-      function loadAdminFiles() {
-        fetch(`${serverUrl}/files`)
-          .then((res) => res.json())
-          .then((files) => {
-            adminList.innerHTML = "";
-            files.forEach((file) => {
-              adminList.innerHTML += `
-                <li>
-                  <a href="${serverUrl}/download/${file}">${file}</a>
-                  <button onclick="deleteFile('${file}')">delete</button>
-                </li>
-              `;
-            });
-          });
-      }
+function loadAdminFiles() {
+  fetch(`${serverUrl}/files`)
+    .then((res) => res.json())
+    .then((files) => {
+      adminList.innerHTML = "";
+      files.forEach((file) => {
+        const fileUrl = `${serverUrl}/download/${file}`;
+        const extension = file.split('.').pop().toLowerCase();
+        let preview = "";
+
+        if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+          preview = `<img src="${fileUrl}" style="max-width: 150px; display: block; margin-bottom: 10px;">`;
+        } else if (["mp4", "webm", "ogg"].includes(extension)) {
+          preview = `<video src="${fileUrl}" controls style="max-width: 150px; display: block; margin-bottom: 10px;"></video>`;
+        }
+
+        adminList.innerHTML += `
+          <li style="margin-bottom: 20px; list-style: none; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+            ${preview}
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <a href="${fileUrl}" target="_blank">${file}</a>
+              <button onclick="deleteFile('${file}')" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
+                <i class="fa fa-trash"></i> Delete
+              </button>
+            </div>
+          </li>
+        `;
+      });
+    });
+}
 
       function deleteFile(name) {
         fetch(`${serverUrl}/delete/${name}`, {
