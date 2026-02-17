@@ -2,6 +2,10 @@
 <html>
   <head>
     <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
     <title>Workshop #6</title>
   </head>
   <body>
@@ -9,35 +13,26 @@
 
       <!-- LOGIN -->
       <div id="loginPage" class="page">
-        <h1>Login</h1>
-        <input id="username" placeholder="username" />
-        <input id="password" type="password" placeholder="password" />
-        <br />
-        <button onclick="login()">Login</button>
-        <br /><br />
-        <button onclick="show('registerPage')">Create account</button>
-      </div>
+    <h1>Login</h1>
 
-      <!-- REGISTER -->
-      <div id="registerPage" class="page">
-        <h2>Register</h2>
-        <input id="reg_username" placeholder="username" />
-        <input id="reg_password" type="password" placeholder="password" />
-        <br />
-        <button onclick="register()">Register</button>
-        <p id="regStatus"></p>
-        <button onclick="show('loginPage')">Back</button>
-      </div>
+    <div class="input-group">
+        <i class="fa fa-user"></i>
+        <input id="username" placeholder="Username">
+    </div>
+
+    <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input id="password" type="password" placeholder="Password">
+    </div>
+
+    <button onclick="login()">Login</button>
+</div>
 
       <!-- USER -->
       <div id="userPage" class="page">
         <h2>Upload Files</h2>
 
-<<<<<<< HEAD
-        <input type="file" id="fileInput">
-=======
         <input type="file" id="fileInput" />
->>>>>>> 96d2664c4f0c7992d68df42b08d3672606cc8909
 
         <div class="btn-group">
           <button class="upload-btn" onclick="uploadFile()">Upload File</button>
@@ -45,30 +40,10 @@
 
         <p id="uploadStatus"></p>
 
-<<<<<<< HEAD
-        <h3>Your Files</h3>
-        <ul id="fileList"></ul>
-
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      </div>
-
-      <!-- ADMIN -->
-      <div id="adminPage" class="page">
-        <h2>Admin Panel</h2>
-
-        <ul id="adminList"></ul>
-
-        <div class="btn-group">
-          <button class="refresh-btn" onclick="loadAdminFiles()">Refresh</button>
-          <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-      </div>
-=======
         <h2>Your Files</h2>
         <ul id="fileList"></ul>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
->>>>>>> 96d2664c4f0c7992d68df42b08d3672606cc8909
 
       <!-- ADMIN -->
       <div id="adminPage" class="page">
@@ -89,7 +64,9 @@
       show("loginPage");
 
       function show(id) {
-        document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => (p.style.display = "none"));
         document.getElementById(id).style.display = "block";
       }
 
@@ -103,34 +80,14 @@
             password: password.value,
           }),
         })
-          .then(res => res.json())
-          .then(data => {
+          .then((res) => res.json())
+          .then((data) => {
             if (data.role === "admin") {
               show("adminPage");
               loadAdminFiles();
             } else {
               show("userPage");
               loadUserFiles();
-            }
-          })
-          .catch(() => alert("login fail"));
-      }
-
-      // REGISTER
-      function register() {
-        fetch(`${serverUrl}/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: reg_username.value,
-            password: reg_password.value,
-          }),
-        })
-          .then(res => res.text())
-          .then(msg => {
-            regStatus.textContent = msg;
-            if (msg === "register success") {
-              show("loginPage");
             }
           });
       }
@@ -160,15 +117,15 @@
       // USER FILE
       function loadUserFiles() {
         fetch(`${serverUrl}/files`)
-          .then(res => res.json())
-          .then(files => {
+          .then((res) => res.json())
+          .then((files) => {
             fileList.innerHTML = "";
-            files.forEach(file => {
+            files.forEach((file) => {
               fileList.innerHTML += `
-                <li>
-                  <a href="${serverUrl}/download/${file}">${file}</a>
-                </li>
-              `;
+          <li>
+            <a href="${serverUrl}/download/${file}">${file}</a>
+          </li>
+        `;
             });
           });
       }
@@ -176,23 +133,23 @@
       // ADMIN FILE
       function loadAdminFiles() {
         fetch(`${serverUrl}/files`)
-          .then(res => res.json())
-          .then(files => {
+          .then((res) => res.json())
+          .then((files) => {
             adminList.innerHTML = "";
-            files.forEach(file => {
+            files.forEach((file) => {
               adminList.innerHTML += `
-                <li>
-                  <a href="${serverUrl}/download/${file}">${file}</a>
-                  <button onclick="deleteFile('${file}')">delete</button>
-                </li>
-              `;
+          <li>
+            <a href="${serverUrl}/download/${file}">${file}</a>
+            <button onclick="deleteFile('${file}')">delete</button>
+          </li>
+        `;
             });
           });
       }
 
       function deleteFile(name) {
         fetch(`${serverUrl}/delete/${name}`, {
-          method: "DELETE"
+          method: "DELETE",
         }).then(() => loadAdminFiles());
       }
     </script>
