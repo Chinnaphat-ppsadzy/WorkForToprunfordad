@@ -9,7 +9,7 @@
 
       <!-- LOGIN -->
       <div id="loginPage" class="page">
-        <h2>Login</h2>
+        <h1>Login</h1>
         <input id="username" placeholder="username" />
         <input id="password" type="password" placeholder="password" />
         <br />
@@ -33,7 +33,11 @@
       <div id="userPage" class="page">
         <h2>Upload Files</h2>
 
+<<<<<<< HEAD
         <input type="file" id="fileInput">
+=======
+        <input type="file" id="fileInput" />
+>>>>>>> 96d2664c4f0c7992d68df42b08d3672606cc8909
 
         <div class="btn-group">
           <button class="upload-btn" onclick="uploadFile()">Upload File</button>
@@ -41,6 +45,7 @@
 
         <p id="uploadStatus"></p>
 
+<<<<<<< HEAD
         <h3>Your Files</h3>
         <ul id="fileList"></ul>
 
@@ -58,7 +63,24 @@
           <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
       </div>
+=======
+        <h2>Your Files</h2>
+        <ul id="fileList"></ul>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+>>>>>>> 96d2664c4f0c7992d68df42b08d3672606cc8909
 
+      <!-- ADMIN -->
+      <div id="adminPage" class="page">
+        <h2>Admin Panel</h2>
+
+        <ul id="adminList"></ul>
+
+        <div class="btn-group">
+          <button class="refresh-btn" onclick="loadFiles()">Refresh</button>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
     </div>
 
     <script>

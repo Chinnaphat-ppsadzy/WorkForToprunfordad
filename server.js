@@ -14,7 +14,7 @@ app.use(express.static("frontend"));
 ========================= */
 let users = [
   { username: "admin", password: "1234", role: "admin" },
-  { username: "user", password: "1234", role: "user" }
+  { username: "user", password: "1234", role: "user" },
 ];
 
 /* =========================
@@ -24,7 +24,7 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find(
-    u => u.username === username && u.password === password
+    (u) => u.username === username && u.password === password,
   );
 
   if (!user) return res.status(401).send("login fail");
@@ -56,6 +56,7 @@ app.post("/register", (req, res) => {
    UPLOAD FILE
 ========================= */
 const storage = multer.diskStorage({
+<<<<<<< HEAD
   destination: (req, file, cb) => {
     // ถ้าไม่มีโฟลเดอร์ uploads ให้สร้าง
     if (!fs.existsSync("uploads")) {
@@ -66,6 +67,10 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     cb(null, file.originalname);
   }
+=======
+  destination: "uploads/",
+  filename: (req, file, cb) => cb(null, file.originalname),
+>>>>>>> 96d2664c4f0c7992d68df42b08d3672606cc8909
 });
 
 const upload = multer({ storage });
