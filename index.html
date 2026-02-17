@@ -50,101 +50,98 @@
     </div>
 
     <script>
-      const serverUrl = "http://localhost:5000";
+     const serverUrl = "http://localhost:5000";
 
-      show("loginPage");
+show("loginPage");
 
-      function show(id) {
-        document
-          .querySelectorAll(".page")
-          .forEach((p) => (p.style.display = "none"));
-        document.getElementById(id).style.display = "block";
+function show(id) {
+  document.querySelectorAll(".page").forEach(p => p.style.display = "none");
+  document.getElementById(id).style.display = "block";
+}
+
+// LOGIN
+function login() {
+  fetch(`${serverUrl}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value,
+    }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.role === "admin") {
+        show("adminPage");
+        loadAdminFiles();
+      } else {
+        show("userPage");
+        loadUserFiles();
       }
+    });
+}
 
-      // LOGIN
-      function login() {
-        fetch(`${serverUrl}/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: username.value,
-            password: password.value,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.role === "admin") {
-              show("adminPage");
-              loadAdminFiles();
-            } else {
-              show("userPage");
-              loadUserFiles();
-            }
-          });
-      }
+// LOGOUT
+function logout() {
+  show("loginPage");
+}
 
-      // LOGOUT
-      function logout() {
-        show("loginPage");
-      }
+// UPLOAD
+function uploadFile() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("เลือกไฟล์ก่อน");
 
-      // UPLOAD
-      function uploadFile() {
-        const fileInput = document.getElementById("fileInput").files[0];
-        if (!fileInput) return alert("Please select a file");
+  const formData = new FormData();
+  formData.append("file", file);
 
-        const formData = new FormData();
-        formData.append("file", fileInput);
+  fetch(`${serverUrl}/upload`, {
+    method: "POST",
+    body: formData,
+  }).then(() => {
+    uploadStatus.textContent = "Upload success";
+    loadUserFiles();
+  });
+}
 
-        fetch(`${serverUrl}/upload`, { method: "POST", body: formData }).then(
-          () => {
-            uploadStatus.textContent = "Upload success";
-            loadUserFiles();
-          },
-        );
-      }
+// USER FILE
+function loadUserFiles() {
+  fetch(`${serverUrl}/files`)
+    .then(res => res.json())
+    .then(files => {
+      fileList.innerHTML = "";
+      files.forEach(file => {
+        fileList.innerHTML += `
+          <li>
+            <a href="${serverUrl}/download/${file}">${file}</a>
+          </li>
+        `;
+      });
+    });
+}
 
-      // USER FILE LIST
-      function loadUserFiles() {
-        fetch(`${serverUrl}/files`)
-          .then((res) => res.json())
-          .then((files) => {
-            fileList.innerHTML = "";
-            files.forEach((file) => {
-              fileList.innerHTML += `
-                    <li>
-                        <a href="${serverUrl}/download/${file}">${file}</a>
-                    </li>
-                `;
-            });
-          });
-      }
+// ADMIN FILE
+function loadAdminFiles() {
+  fetch(`${serverUrl}/files`)
+    .then(res => res.json())
+    .then(files => {
+      adminList.innerHTML = "";
+      files.forEach(file => {
+        adminList.innerHTML += `
+          <li>
+            <a href="${serverUrl}/download/${file}">${file}</a>
+            <button onclick="deleteFile('${file}')">delete</button>
+          </li>
+        `;
+      });
+    });
+}
 
-      // ADMIN FILE LIST
-      function loadAdminFiles() {
-        fetch(`${serverUrl}/files`)
-          .then((res) => res.json())
-          .then((files) => {
-            adminList.innerHTML = "";
-            files.forEach((file) => {
-              adminList.innerHTML += `
-                    <li>
-                        <a href="${serverUrl}/download/${file}">${file}</a>
-                        <button onclick="deleteFile('${file}')">delete</button>
-                    </li>
-                `;
-            });
-          });
-      }
+function deleteFile(name) {
+  fetch(`${serverUrl}/delete/${name}`, {
+    method: "DELETE"
+  }).then(() => loadAdminFiles());
+}
 
-      // DELETE FILE
-      function deleteFile(name) {
-        if (confirm("delete file?")) {
-          fetch(`${serverUrl}/delete/${name}`, { method: "DELETE" }).then(() =>
-            loadAdminFiles(),
-          );
-        }
-      }
     </script>
   </body>
 </html>
