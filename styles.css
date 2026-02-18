@@ -173,4 +173,38 @@ li a {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+input[type="file"]{
+  width: 92%;
+  padding:12px;
+  margin-top:10px;
+
+  background:#ffffff;
+  border:2px dashed #c7d2fe;
+  border-radius:12px;
+
+  cursor:pointer;
+  transition:0.25s;
+}
+
+/* hover */
+input[type="file"]:hover{
+  border-color:#6366f1;
+  background:#f8faff;
+}
+
+/* ปรับปุ่ม Choose File */
+input[type="file"]::file-selector-button{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  margin-right:10px;
+  cursor:pointer;
+  transition:.25s;
+}
+
+/* hover ปุ่ม */
+input[type="file"]::file-selector-button:hover{
+  transform:scale(1.05);
 }

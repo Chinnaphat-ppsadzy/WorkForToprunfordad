@@ -11,16 +11,18 @@ app.use(express.static("public"));
 app.use(express.static("frontend"));
 
 /* =========================
-   USER DATABASE (temporary)
+   USER DATABASE 
 ========================= */
-let users = [
-  { username: "admin", password: "1234", role: "admin" },
-  { username: "user", password: "1234", role: "user" },
-];
+const usersFile = "user.json";
+
+const users = JSON.parse(fs.readFileSync(usersFile));
+
+function saveUsers(users) {
+  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+}
 
 // จำ user ที่ login
 let currentUser = null;
-
 
 /* =========================
    LOGIN
@@ -29,7 +31,7 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find(
-    (u) => u.username === username && u.password === password
+    (u) => u.username === username && u.password === password,
   );
 
   if (!user) return res.status(401).send("login fail");
@@ -38,13 +40,11 @@ app.post("/login", (req, res) => {
   res.json({ role: user.role });
 });
 
-
 /* =========================
    REGISTER
 ========================= */
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
-
   const exist = users.find((u) => u.username === username);
   if (exist) return res.send("username already exists");
 
@@ -54,7 +54,8 @@ app.post("/register", (req, res) => {
     role: "user",
   });
 
-  // สร้างโฟลเดอร์ user
+  saveUsers(users);
+
   const userFolder = `uploads/${username}`;
   if (!fs.existsSync(userFolder)) {
     fs.mkdirSync(userFolder, { recursive: true });
@@ -62,7 +63,6 @@ app.post("/register", (req, res) => {
 
   res.send("register success");
 });
-
 
 /* =========================
    STORAGE CONFIG
@@ -85,7 +85,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
 /* =========================
    UPLOAD FILE
 ========================= */
@@ -93,12 +92,28 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.send("upload success");
 });
 
-
 /* =========================
    LIST FILES (เฉพาะ user)
 ========================= */
 app.get("/files", (req, res) => {
   if (!currentUser) return res.json([]);
+  const user = users.find((u) => u.username === currentUser);
+
+  // ถ้าเป็น admin
+  if (user.role === "admin") {
+    const allFiles = [];
+
+    fs.readdirSync("uploads").forEach((folder) => {
+      const folderPath = `uploads/${folder}`;
+      const files = fs.readdirSync(folderPath);
+
+      files.forEach((file) => {
+        allFiles.push(`${folder}/${file}`);
+      });
+    });
+
+    return res.json(allFiles);
+  }
 
   const userFolder = `uploads/${currentUser}`;
 
@@ -107,7 +122,6 @@ app.get("/files", (req, res) => {
     res.json(files);
   });
 });
-
 
 /* =========================
    DOWNLOAD
@@ -118,7 +132,6 @@ app.get("/download/:name", (req, res) => {
   const filePath = `uploads/${currentUser}/${req.params.name}`;
   res.download(filePath);
 });
-
 
 /* =========================
    DELETE FILE
@@ -133,7 +146,6 @@ app.delete("/delete/:name", (req, res) => {
     res.send("file not found");
   }
 });
-
 
 /* =========================
    SERVER START
