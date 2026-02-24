@@ -10,9 +10,6 @@ app.use(express.json());
 app.use(express.static("public"));
 app.use(express.static("frontend"));
 
-/* =========================
-   USER DATABASE 
-========================= */
 const usersFile = "user.json";
 
 const users = JSON.parse(fs.readFileSync(usersFile));
@@ -21,12 +18,9 @@ function saveUsers(users) {
   fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 }
 
-// จำ user ที่ login
 let currentUser = null;
+let currentRole = null;
 
-/* =========================
-   LOGIN
-========================= */
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -37,12 +31,10 @@ app.post("/login", (req, res) => {
   if (!user) return res.status(401).send("login fail");
 
   currentUser = user.username;
+  currentRole = user.role;
   res.json({ role: user.role });
 });
 
-/* =========================
-   REGISTER
-========================= */
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
   const exist = users.find((u) => u.username === username);
@@ -64,9 +56,6 @@ app.post("/register", (req, res) => {
   res.send("register success");
 });
 
-/* =========================
-   STORAGE CONFIG
-========================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (!currentUser) return cb(new Error("not login"));
@@ -85,37 +74,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-/* =========================
-   UPLOAD FILE
-========================= */
 app.post("/upload", upload.single("file"), (req, res) => {
   res.send("upload success");
 });
 
-/* =========================
-   LIST FILES (เฉพาะ user)
-========================= */
 app.get("/files", (req, res) => {
-   if (!currentUser) return res.json([]);
+  if (!currentUser) return res.json([]);
 
   const search = req.query.search?.toLowerCase() || "";
   const user = users.find((u) => u.username === currentUser);
 
-  // ถ้าเป็น admin
-if (user.role === "admin") {
-  const allFiles = [];
+  if (user.role === "admin") {
+    const allFiles = [];
 
-  fs.readdirSync("uploads").forEach((folder) => {
-    const folderPath = `uploads/${folder}`;
-    const files = fs.readdirSync(folderPath);
+    fs.readdirSync("uploads").forEach((folder) => {
+      const folderPath = `uploads/${folder}`;
+      const files = fs.readdirSync(folderPath);
 
-    files.forEach((file) => {
-      allFiles.push(`${folder}/${file}`);
+      files.forEach((file) => {
+        allFiles.push(`${folder}/${file}`);
+      });
     });
-  });
 
-  return res.json(allFiles);
-}
+    return res.json(allFiles);
+  }
 
   const userFolder = `uploads/${currentUser}`;
 
@@ -125,30 +107,69 @@ if (user.role === "admin") {
   });
 });
 
-/* =========================
-   DOWNLOAD
-========================= */
-app.get("/download/:name", (req, res) => {
+app.get(/^\/download\/(.+)/, (req, res) => {
   if (!currentUser) return res.send("not login");
 
-  const filePath = `uploads/${currentUser}/${req.params.name}`;
+  const fileParam = req.params[0];
+
+  let filePath;
+  if (currentRole === "admin") {
+    filePath = `uploads/${fileParam}`;
+  } else {
+    filePath = `uploads/${currentUser}/${fileParam}`;
+  }
+
   res.download(filePath);
 });
 
-/* =========================
-   DELETE FILE
-========================= */
-app.delete("/delete/:name", (req, res) => {
+app.delete(/^\/delete\/(.+)/, (req, res) => {
   if (!currentUser) return res.send("not login");
 
   try {
-    fs.unlinkSync(`uploads/${currentUser}/${req.params.name}`);
+    const fileParam = req.params[0];
+
+    let filePath;
+    if (currentRole === "admin") {
+      filePath = `uploads/${fileParam}`;
+    } else {
+      filePath = `uploads/${currentUser}/${fileParam}`;
+    }
+
+    fs.unlinkSync(filePath);
     res.send("deleted");
   } catch {
     res.send("file not found");
   }
 });
-/* =========================
-   SERVER START
-========================= */
+
+app.get("/users", (req, res) => {
+  if (!currentUser) return res.json([]);
+
+  const allUser = users
+    .filter((u) => u.username !== currentUser && u.role !== "admin")
+    .map((u) => u.username);
+
+  res.json(allUser);
+});
+
+app.post("/share", (req, res) => {
+  if (!currentUser) return res.send("not login");
+
+  const { fileName, targetUser } = req.body;
+  try {
+    const sourceFile = `uploads/${currentUser}/${fileName}`;
+    const targetFolder = `uploads/${targetUser}`;
+
+    if (!fs.existsSync(targetFolder)) {
+      fs.mkdirSync(targetFolder, { recursive: true });
+    }
+
+    const targetFile = `${targetFolder}/${fileName}`;
+    fs.copyFileSync(sourceFile, targetFile);
+    res.send("file shared successfully");
+  } catch (err) {
+    res.send("failed to share file");
+  }
+});
+
 app.listen(5000, () => console.log("server run at http://localhost:5000"));

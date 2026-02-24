@@ -28,5 +28,10 @@
     "username": "ppsadzy",
     "password": "151148",
     "role": "user"
+  },
+  {
+    "username": "PP",
+    "password": "1234",
+    "role": "admin"
   }
 ]
