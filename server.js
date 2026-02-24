@@ -96,24 +96,26 @@ app.post("/upload", upload.single("file"), (req, res) => {
    LIST FILES (เฉพาะ user)
 ========================= */
 app.get("/files", (req, res) => {
-  if (!currentUser) return res.json([]);
+   if (!currentUser) return res.json([]);
+
+  const search = req.query.search?.toLowerCase() || "";
   const user = users.find((u) => u.username === currentUser);
 
   // ถ้าเป็น admin
-  if (user.role === "admin") {
-    const allFiles = [];
+if (user.role === "admin") {
+  const allFiles = [];
 
-    fs.readdirSync("uploads").forEach((folder) => {
-      const folderPath = `uploads/${folder}`;
-      const files = fs.readdirSync(folderPath);
+  fs.readdirSync("uploads").forEach((folder) => {
+    const folderPath = `uploads/${folder}`;
+    const files = fs.readdirSync(folderPath);
 
-      files.forEach((file) => {
-        allFiles.push(`${folder}/${file}`);
-      });
+    files.forEach((file) => {
+      allFiles.push(`${folder}/${file}`);
     });
+  });
 
-    return res.json(allFiles);
-  }
+  return res.json(allFiles);
+}
 
   const userFolder = `uploads/${currentUser}`;
 
@@ -146,7 +148,6 @@ app.delete("/delete/:name", (req, res) => {
     res.send("file not found");
   }
 });
-
 /* =========================
    SERVER START
 ========================= */

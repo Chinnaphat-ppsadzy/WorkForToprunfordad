@@ -61,6 +61,12 @@
         <p id="uploadStatus"></p>
 
         <h2>Your Files</h2>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search file name..."
+          onkeyup="loadUserFiles()"
+        />
         <ul id="fileList"></ul>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </div>
@@ -68,7 +74,6 @@
       <!-- ADMIN -->
       <div id="adminPage" class="page">
         <h2>Admin Panel</h2>
-
         <ul id="adminList"></ul>
 
         <div class="btn-group">
@@ -155,50 +160,62 @@
       }
 
       // USER FILE
-     function loadUserFiles() {
-  fetch(`${serverUrl}/files`)
-    .then((res) => res.json())
-    .then((files) => {
-      fileList.innerHTML = "";
-      files.forEach((file) => {
-        const fileUrl = `${serverUrl}/download/${file}`;
-        const extension = file.split('.').pop().toLowerCase();
-        let preview = "";
- 
-        if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
-          preview = `<img src="${fileUrl}" style="max-width: 200px; display: block; margin-bottom: 10px; border-radius: 8px;">`;
-        } else if (["mp4", "webm", "ogg"].includes(extension)) {
-          preview = `<video src="${fileUrl}" controls style="max-width: 200px; display: block; margin-bottom: 10px; border-radius: 8px;"></video>`;
-        }
+      function loadUserFiles() {
+        const keyword =
+          document.getElementById("searchInput")?.value.toLowerCase() || "";
 
-        fileList.innerHTML += `
-          <li style="margin-bottom: 20px; list-style: none; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+        fetch(`${serverUrl}/files`)
+          .then((res) => res.json())
+          .then((files) => {
+            // เรียงไฟล์ให้คำที่ค้นหาขึ้นก่อน
+            if (keyword) {
+              files.sort((a, b) => {
+                const aMatch = a.toLowerCase().includes(keyword) ? 0 : 1;
+                const bMatch = b.toLowerCase().includes(keyword) ? 0 : 1;
+                return aMatch - bMatch;
+              });
+            }
+
+            fileList.innerHTML = "";
+
+            files.forEach((file) => {
+              const fileUrl = `${serverUrl}/download/${file}`;
+              const extension = file.split(".").pop().toLowerCase();
+              let preview = "";
+
+              if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+                preview = `<img src="${fileUrl}" 
+                     style="max-width:200px; display:block; margin-bottom:10px;">`;
+              }
+
+              fileList.innerHTML += `
+          <li style="margin-bottom:20px;">
             ${preview}
-            <a href="${fileUrl}" target="_blank"><i class="fa fa-file"></i> ${file}</a>
+            <a href="${fileUrl}" target="_blank">${file}</a>
           </li>
         `;
-      });
-    });
-}
+            });
+          });
+      }
 
       // ADMIN FILE
-function loadAdminFiles() {
-  fetch(`${serverUrl}/files`)
-    .then((res) => res.json())
-    .then((files) => {
-      adminList.innerHTML = "";
-      files.forEach((file) => {
-        const fileUrl = `${serverUrl}/download/${file}`;
-        const extension = file.split('.').pop().toLowerCase();
-        let preview = "";
+      function loadAdminFiles() {
+        fetch(`${serverUrl}/files`)
+          .then((res) => res.json())
+          .then((files) => {
+            adminList.innerHTML = "";
+            files.forEach((file) => {
+              const fileUrl = `${serverUrl}/download/${file}`;
+              const extension = file.split(".").pop().toLowerCase();
+              let preview = "";
 
-        if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
-          preview = `<img src="${fileUrl}" style="max-width: 150px; display: block; margin-bottom: 10px;">`;
-        } else if (["mp4", "webm", "ogg"].includes(extension)) {
-          preview = `<video src="${fileUrl}" controls style="max-width: 150px; display: block; margin-bottom: 10px;"></video>`;
-        }
+              if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+                preview = `<img src="${fileUrl}" style="max-width: 150px; display: block; margin-bottom: 10px;">`;
+              } else if (["mp4", "webm", "ogg"].includes(extension)) {
+                preview = `<video src="${fileUrl}" controls style="max-width: 150px; display: block; margin-bottom: 10px;"></video>`;
+              }
 
-        adminList.innerHTML += `
+              adminList.innerHTML += `
           <li style="margin-bottom: 20px; list-style: none; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
             ${preview}
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -209,9 +226,9 @@ function loadAdminFiles() {
             </div>
           </li>
         `;
-      });
-    });
-}
+            });
+          });
+      }
 
       function deleteFile(name) {
         fetch(`${serverUrl}/delete/${name}`, {
